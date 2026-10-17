@@ -9,6 +9,7 @@ mvnw.cmd
 .gitattributes
 src/main/resources/application.properties
 src/test
+.mvn
 
 ### STS ###
 .apt_generated
