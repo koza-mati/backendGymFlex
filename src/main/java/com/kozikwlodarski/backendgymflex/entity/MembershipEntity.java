@@ -47,7 +47,7 @@ public class MembershipEntity {
 
     //RELACJE
     @OneToOne(mappedBy = "payments")
-    private List<Membership> memberships;
+    private List<PaymentsEntity> paymentsEntities;
 
     @PrePersist
     private void createdOn() {
