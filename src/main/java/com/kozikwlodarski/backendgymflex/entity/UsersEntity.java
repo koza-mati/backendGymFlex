@@ -53,12 +53,12 @@ public class UsersEntity {
     // Relacje
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<MemberShip> memberships;
+    private List<MembershipEntity> memberships;
 
     @OneToMany(mappedBy = "trainer")
-    private List<FitnessClass> ledClass;
+    private List<FitnessClassEntity> ledClass;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Reservation> reservations;
+    private List<ReservationEntity> reservations;
 }
 
