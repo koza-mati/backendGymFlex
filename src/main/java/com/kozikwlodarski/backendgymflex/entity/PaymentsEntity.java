@@ -1,7 +1,6 @@
 package com.kozikwlodarski.backendgymflex.entity;
 
 import jakarta.persistence.*;
-import jakarta.websocket.OnError;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,14 +23,11 @@ public class PaymentsEntity {
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "method", nullable = false)
+    @Column(name = "method", nullable = false, length = 30)
     private String method;
 
-    @Column(name = "status", nullable = false, length = 30)
+    @Column(name = "status", nullable = false, length = 20)
     private String status;
-
-    @Column(name = "is_active", nullable = , length = 20)
-    private boolean isActive = true;
 
     @Column(name = "paid_at", nullable = false)
     private LocalDateTime paid_At;
