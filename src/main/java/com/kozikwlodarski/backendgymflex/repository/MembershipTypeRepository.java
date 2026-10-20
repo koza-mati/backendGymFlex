@@ -9,5 +9,6 @@ import java.util.List;
 
 @Repository
 public interface MembershipTypeRepository extends JpaRepository<MembershipTypeEntity, Long> {
-    List<MembershipEntity> findAllByIsActiveTrue();
+    // Pobiera tylko aktywne typy karnetów
+    List<MembershipTypeEntity> findAllByIsActiveTrue();
 }
