@@ -37,8 +37,8 @@ public class MembershipTypeEntity {
 
 
     //RELACJE
-    @OneToMany(mappedBy = "membership_Types")
-    private List<Membership> memberships;
+    @OneToMany(mappedBy = "membershipType")
+    private List<MembershipEntity> membershipEntities;
 
     @PrePersist
     private void createdOn() {

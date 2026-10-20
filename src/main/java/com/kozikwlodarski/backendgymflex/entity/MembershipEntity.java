@@ -5,8 +5,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "memberships")
@@ -34,29 +32,23 @@ public class MembershipEntity {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime upadtedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-
-    //RELACJE
-    @OneToOne(mappedBy = "payments")
-    private List<PaymentsEntity> paymentsEntities;
-
     @PrePersist
     private void createdOn() {
         this.createdAt = LocalDateTime.now();
-        this.upadtedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     private void updatedOn() {
-        this.upadtedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }

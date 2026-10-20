@@ -40,7 +40,7 @@ public class FitnessClassEntity {
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime upadtedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
@@ -48,11 +48,11 @@ public class FitnessClassEntity {
     @PrePersist
     private void createdOn() {
         this.createdAt = LocalDateTime.now();
-        this.upadtedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     private void updatedOn() {
-        this.upadtedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }
