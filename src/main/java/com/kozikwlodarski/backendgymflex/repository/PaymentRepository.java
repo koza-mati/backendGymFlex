@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<PaymentsEntity, Long> {
-    // Pobranie płatności przypisanej do konkretengo kartentu one-one
-    Optional<PaymentsEntity> findByMembershipId(Long membershipId);
+    // Pobranie płatności przypisanej do konkretnego karnetu (One-to-One)
+    Optional<PaymentsEntity> findByMembershipEntityId(Long membershipId);
 }
