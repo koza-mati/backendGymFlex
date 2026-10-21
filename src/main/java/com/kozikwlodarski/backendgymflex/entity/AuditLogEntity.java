@@ -25,7 +25,13 @@ public class AuditLogEntity {
     private UsersEntity users;
 
     @Column(name = "action", nullable = false, length = 100)
-    private String action; // np. "CLASS_RESERVATION", "PURCHASE_MEMBERSHIP"
+    private String action;
+
+    @Column(name = "entity_name", length = 50)
+    private String entityName;
+
+    @Column(name = "entity_id")
+    private Long entityId;
 
     @Column(name = "details", columnDefinition = "TEXT")
     private String details;
@@ -39,5 +45,4 @@ public class AuditLogEntity {
             this.createdAt = LocalDateTime.now();
         }
     }
-
 }
