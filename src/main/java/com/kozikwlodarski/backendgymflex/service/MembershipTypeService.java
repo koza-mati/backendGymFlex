@@ -3,12 +3,14 @@ package com.kozikwlodarski.backendgymflex.service;
 import com.kozikwlodarski.backendgymflex.dto.request.MembershipTypeRequestDto;
 import com.kozikwlodarski.backendgymflex.dto.response.MembershipResponseDto;
 import com.kozikwlodarski.backendgymflex.dto.response.MembershipTypeResponseDto;
+import com.kozikwlodarski.backendgymflex.entity.MembershipEntity;
 import com.kozikwlodarski.backendgymflex.entity.MembershipTypeEntity;
 import com.kozikwlodarski.backendgymflex.repository.MembershipTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.naming.Name;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,4 +60,21 @@ public class MembershipTypeService {
         return mapToResponseDto(savedEntity);
     }
 
+    // 4. Zaktualizowanie karnetu
+    @Transactional
+    public MembershipTypeResponseDto updateType(Long id, MembershipTypeRequestDto requestDto){
+        MembershipTypeEntity entity = membershipTypeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Typ karnetu o ID " + id + " nie istnieje!"));
+        entity.setName(requestDto.getName());
+        entity.setPrice(requestDto.getPrice());
+        entity.setDuartionDays(requestDto.getDurationDays());
+
+        return mapToResponseDto(entity);
+    }
+
+    // 5. Soft Delete ukrywa karnet z oferty, ale pozostawai go w bazie dla zachowania spojnosci w histroaich platnosci
+    @Transactional
+    public void deActiveType(Long id){
+        MembershipTypeEntity entity = membershipTypeRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Typ karnetu o ID " + id + " nie istnieje"));
+        entity.setActive(false);
+    }
 }
