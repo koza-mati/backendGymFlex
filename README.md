@@ -8,11 +8,22 @@ GymFlex is a Spring Boot REST API with a React and Tailwind web application for 
 - PostgreSQL 15 or newer
 - Node.js 20 or newer and npm (only needed to develop/build the React frontend)
 
+## Quick start (local)
+
+Requirements: Java 17+, Node.js 20+, npm, and Docker Desktop with Compose.
+
+1. Start PostgreSQL: `docker compose up -d db`.
+2. In a terminal, run the backend with the local profile: `./mvnw spring-boot:run -Dspring-boot.run.profiles=local` (Windows: `mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local`).
+3. In another terminal, run the frontend: `cd frontend`, `npm install`, then `npm run dev`.
+4. Open `http://localhost:5173`. The local database starts with an administrator account `admin@gymflex.local` / `Admin123!`; use it only for local development.
+
+The dev server forwards `/api` requests to the backend on port `8081`. You can also create a production frontend bundle with `npm run build` in `frontend`; Vite writes it directly to the backend static resources.
+
 ## Database and backend
 
 Create a PostgreSQL database named `gymflex_db`, then configure the connection with `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`. The default URL points to `localhost:5432/gymflex_db`, and the default username is `postgres`; set `DB_PASSWORD` for your local database. The application creates/updates its JPA tables, then applies the idempotent indexes, constraints, occupancy view, `cancel_class` procedure, append-only audit trigger, and deferred membership/payment consistency triggers from `src/main/resources/schema.sql`.
 
-Set `JWT_SECRET` to a private random value of at least 32 bytes before starting the application. The API listens on port `8081`.
+The `local` Spring profile supplies a local database password, JWT key, and bootstrap administrator credentials. These defaults are for local development only. Set `DB_PASSWORD`, `JWT_SECRET` (at least 32 bytes), `BOOTSTRAP_ADMIN_EMAIL`, and `BOOTSTRAP_ADMIN_PASSWORD` in any shared or deployed environment. The API listens on port `8081`.
 
 To create the first administrator, set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` in the IntelliJ run configuration (or process environment) before the first startup. The account is created with a BCrypt password. Clear those variables after setup; later startups leave the existing administrator unchanged. Legacy plaintext passwords in the existing database are upgraded to BCrypt during startup.
 
