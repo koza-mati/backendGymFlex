@@ -3,6 +3,7 @@ package com.kozikwlodarski.backendgymflex.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class MembershipTypeEntity {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private double price;
+    @Column(name = "price", nullable = false, precision = 8, scale = 2)
+    private BigDecimal price;
 
     @Column(name = "duration_days", nullable = false)
     private int durationDays;

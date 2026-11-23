@@ -5,9 +5,6 @@ import lombok.Data;
 
 @Data
 public class CreateReservationRequestDto {
-    @NotNull(message = "ID użytkownika jest wymagane")
-    private Long userId;
-
     @NotNull(message = "ID zajęć jest wymagane")
     private Long fitnessClassId;
 }

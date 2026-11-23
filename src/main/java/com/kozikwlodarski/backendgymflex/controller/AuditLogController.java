@@ -1,6 +1,6 @@
 package com.kozikwlodarski.backendgymflex.controller;
 
-import com.kozikwlodarski.backendgymflex.entity.AuditLogEntity;
+import com.kozikwlodarski.backendgymflex.dto.response.AuditLogResponseDto;
 import com.kozikwlodarski.backendgymflex.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class AuditLogController {
     private final AuditLogService auditLogService;
 
     @GetMapping
-    public ResponseEntity<List<AuditLogEntity>> getAllLogs() {
+    public ResponseEntity<List<AuditLogResponseDto>> getAllLogs() {
         return ResponseEntity.ok(auditLogService.getAllLogs());
     }
 }

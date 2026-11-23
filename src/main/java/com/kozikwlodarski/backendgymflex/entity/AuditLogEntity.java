@@ -24,7 +24,7 @@ public class AuditLogEntity {
     @JoinColumn(name = "user_id", nullable = true)
     private UsersEntity users;
 
-    @Column(name = "action", nullable = false, length = 100)
+    @Column(name = "action", nullable = false, length = 50)
     private String action;
 
     @Column(name = "entity_name", length = 50)

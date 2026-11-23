@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.security.Principal;
 
 /**
  * Serwis do obsługi rezerwacji miejsc na zajęciach fitness.
@@ -23,6 +24,44 @@ public class ReservationService {
     private final MembershipRepository membershipRepository;
     private final AuditLogRepository auditLogRepository;
 
+    @Transactional(readOnly = true)
+    public java.util.List<ReservationResponseDto> getReservationsForUser(String email) {
+        UsersEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zalogowanego użytkownika."));
+        return reservationRepository.findByUsersId(user.getId()).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional
+    public void cancelReservation(Long reservationId, String email) {
+        ReservationEntity reservation = reservationRepository.findByIdAndUsersEmail(reservationId, email)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono rezerwacji."));
+        if (!"CONFIRMED".equals(reservation.getStatus()) || !reservation.getFitnessClass().getStartTime().isAfter(java.time.LocalDateTime.now())) {
+            throw new IllegalStateException("Rezerwację można anulować tylko przed rozpoczęciem zajęć.");
+        }
+        reservation.setStatus("CANCELLED");
+        AuditLogEntity auditLog = new AuditLogEntity();
+        auditLog.setUsers(reservation.getUsers());
+        auditLog.setAction("RESERVATION_CANCELLED");
+        auditLog.setEntityName("RESERVATIONS");
+        auditLog.setEntityId(reservation.getId());
+        auditLog.setDetails("Wypisanie z zajęć: " + reservation.getFitnessClass().getTitle());
+        auditLogRepository.save(auditLog);
+    }
+
+    private ReservationResponseDto toResponse(ReservationEntity reservation) {
+        ReservationResponseDto response = new ReservationResponseDto();
+        response.setReservationId(reservation.getId());
+        response.setUserId(reservation.getUsers().getId());
+        response.setUserFullName(reservation.getUsers().getFirstName() + " " + reservation.getUsers().getLastName());
+        response.setClassName(reservation.getFitnessClass().getTitle());
+        response.setStartTime(reservation.getFitnessClass().getStartTime());
+        response.setStatus(reservation.getStatus());
+        if (reservation.getFitnessClass().getTrainer() != null) {
+            response.setTrainerFullName(reservation.getFitnessClass().getTrainer().getFirstName() + " " + reservation.getFitnessClass().getTrainer().getLastName());
+        }
+        return response;
+    }
+
     /**
      * TRANSAKCJA 1 (Wymóg WB.02): Zapis klienta na zajęcia.
      * System sprawdza dostępność miejsc i aktywność karnetu.
@@ -32,15 +71,18 @@ public class ReservationService {
      * @return ReservationResponseDto potwierdzenie wygenerowanej rezerwacji
      */
     @Transactional
-    public ReservationResponseDto createReservation(CreateReservationRequestDto requestDto) {
+    public ReservationResponseDto createReservation(CreateReservationRequestDto requestDto, String email) {
 
         // 1. BLOKADA PESYMISTYCZNA (Wymóg WNF.06)
         // Zablokowanie rekordu zajęć w bazie. Inne transakcje próbujące zmodyfikować te zajęcia będą czekać na COMMIT bieżącej.
         FitnessClassEntity fitnessClass = fitnessClassRepository.findByIdAndLockForUpdate(requestDto.getFitnessClassId())
                 .orElseThrow(() -> new IllegalArgumentException("Zajęcia nie istnieją lub są nieaktywne."));
+        if (!fitnessClass.getStartTime().isAfter(java.time.LocalDateTime.now())) {
+            throw new IllegalStateException("Nie można zapisać się na zajęcia, które już się rozpoczęły.");
+        }
 
-        UsersEntity user = userRepository.findById(requestDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika o ID: " + requestDto.getUserId()));
+        UsersEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zalogowanego użytkownika."));
 
         // 2. Weryfikacja: czy klient ma aktywny, opłacony karnet ważny na dzień dzisiejszy?
         boolean hasActiveMembership = membershipRepository.hasActiveAndPaidMembership(user.getId(), LocalDate.now());

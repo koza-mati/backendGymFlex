@@ -5,13 +5,12 @@ import com.kozikwlodarski.backendgymflex.dto.response.MembershipResponseDto;
 import com.kozikwlodarski.backendgymflex.entity.*;
 import com.kozikwlodarski.backendgymflex.repository.*;
 import lombok.RequiredArgsConstructor;
-import lombok.var;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Serwis obsługujący logikę zarządzania posiadanymi karnetami klientów.
@@ -25,6 +24,25 @@ public class MembershipService {
     private final PaymentRepository paymentRepository;
     private final AuditLogRepository auditLogRepository;
 
+    @Transactional(readOnly = true)
+    public List<MembershipResponseDto> getMembershipsForUser(String email) {
+        UsersEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zalogowanego użytkownika."));
+        return membershipRepository.findByUsersId(user.getId()).stream().map(membership -> {
+            MembershipResponseDto response = new MembershipResponseDto();
+            response.setMembershipId(membership.getId());
+            response.setMembershipTypeName(membership.getMembershipType().getName());
+            response.setStartDate(membership.getStartDate());
+            response.setEndDate(membership.getEndDate());
+            response.setActive(membership.isActive());
+            paymentRepository.findByMembershipEntityId(membership.getId()).ifPresent(payment -> {
+                response.setPricePaid(payment.getAmount());
+                response.setPaymentStatus(payment.getStatus());
+            });
+            return response;
+        }).toList();
+    }
+
     /**
      * TRANSAKCJA 2 (Wymóg WB.03): Zakup nowego karnetu.
      * Zapewnia spójność operacji (ACID). Zapisuje karnet, symuluje płatność i dodaje wpis do logów audytowych.
@@ -34,11 +52,11 @@ public class MembershipService {
      * @return MembershipResponseDto podsumowanie utworzonego karnetu
      */
     @Transactional
-    public MembershipResponseDto purchaseMembership(PurchaseMembershipRequestDto requestDto) {
+    public MembershipResponseDto purchaseMembership(PurchaseMembershipRequestDto requestDto, String email) {
 
         // 1. Walidacja użytkownika i cennika
-        UsersEntity user = userRepository.findById(requestDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika o ID: " + requestDto.getUserId()));
+        UsersEntity user = userRepository.findByEmailForUpdate(email)
+                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono zalogowanego użytkownika."));
 
         MembershipTypeEntity type = membershipTypeRepository.findById(requestDto.getMembershipTypeId())
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono karnetu o ID: " + requestDto.getMembershipTypeId()));
@@ -71,7 +89,7 @@ public class MembershipService {
         // 4. Utworzenie płatności (zapis ceny historycznej chroni przed zmianą cennika w przyszłości)
         PaymentsEntity payment = new PaymentsEntity();
         payment.setMembershipEntity(savedMembership);
-        payment.setAmount(BigDecimal.valueOf(type.getPrice()));
+        payment.setAmount(type.getPrice());
         payment.setMethod(requestDto.getPaymentMethod());
         payment.setStatus("PAID"); // Symulacja udanej płatności
         payment.setPaidAt(LocalDateTime.now());

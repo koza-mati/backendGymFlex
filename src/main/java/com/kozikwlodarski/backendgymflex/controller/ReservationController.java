@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
 
 /**
  * Kontroler REST obsługujący proces zapisywania się na zajęcia w klubie.
@@ -28,8 +29,19 @@ public class ReservationController {
      * @return 201 Created wraz z obiektem potwierdzającym utworzenie rezerwacji
      */
     @PostMapping
-    public ResponseEntity<ReservationResponseDto> createReservation(@Valid @RequestBody CreateReservationRequestDto requestDto) {
-        ReservationResponseDto response = reservationService.createReservation(requestDto);
+    public ResponseEntity<ReservationResponseDto> createReservation(@Valid @RequestBody CreateReservationRequestDto requestDto, Principal principal) {
+        ReservationResponseDto response = reservationService.createReservation(requestDto, principal.getName());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<java.util.List<ReservationResponseDto>> getMyReservations(Principal principal) {
+        return ResponseEntity.ok(reservationService.getReservationsForUser(principal.getName()));
+    }
+
+    @DeleteMapping("/{reservationId}")
+    public ResponseEntity<Void> cancelReservation(@PathVariable Long reservationId, Principal principal) {
+        reservationService.cancelReservation(reservationId, principal.getName());
+        return ResponseEntity.noContent().build();
     }
 }

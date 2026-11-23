@@ -27,13 +27,13 @@ public class UsersEntity {
   @Column(name = "last_name", nullable = false, length = 50)
   private String lastName;
 
-  @Column(name = "email", nullable = false, length = 110)
+  @Column(name = "email", nullable = false, unique = true, length = 100)
   private String email;
 
-  @Column(name = "password_hash", nullable = false, length = 255)
+  @Column(name = "password_hash", nullable = false, length = 60)
   private String passwordHash;
 
-  @Column(name = "role", nullable = false, length = 50)
+  @Column(name = "role", nullable = false, length = 10)
   private String role;
 
   @Column(name = "is_active", nullable = false)

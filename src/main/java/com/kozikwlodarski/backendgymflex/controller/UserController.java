@@ -1,7 +1,7 @@
 package com.kozikwlodarski.backendgymflex.controller;
 
 import com.kozikwlodarski.backendgymflex.dto.request.UserRegisterRequestDto;
-import com.kozikwlodarski.backendgymflex.entity.UsersEntity;
+import com.kozikwlodarski.backendgymflex.dto.request.AdminUserCreateRequestDto;
 import com.kozikwlodarski.backendgymflex.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +27,48 @@ public class UserController {
      * @return 201 Created oraz obiekt zapisanego użytkownika
      */
     @PostMapping("/register")
-    public ResponseEntity<UsersEntity> registerUser(@Valid @RequestBody UserRegisterRequestDto requestDto) {
-        UsersEntity createdUser = userService.registerUser(requestDto);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    public ResponseEntity<Void> registerUser(@Valid @RequestBody UserRegisterRequestDto requestDto) {
+        userService.registerUser(requestDto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping
+    public ResponseEntity<Void> createPrivilegedUser(@Valid @RequestBody AdminUserCreateRequestDto request) {
+        userService.createPrivilegedUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deactivateUser(@PathVariable Long userId, java.security.Principal principal) {
+        userService.deactivateUser(userId, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/trainers")
+    public ResponseEntity<List<com.kozikwlodarski.backendgymflex.dto.response.UserProfileResponseDto>> getTrainers() {
+        return ResponseEntity.ok(userService.getTrainers().stream().map(user -> {
+            var dto = new com.kozikwlodarski.backendgymflex.dto.response.UserProfileResponseDto();
+            dto.setId(user.getId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+            dto.setRole(user.getRole());
+            return dto;
+        }).toList());
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<com.kozikwlodarski.backendgymflex.dto.response.UserProfileResponseDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers().stream().map(user -> {
+            var dto = new com.kozikwlodarski.backendgymflex.dto.response.UserProfileResponseDto();
+            dto.setId(user.getId());
+            dto.setFirstName(user.getFirstName());
+            dto.setLastName(user.getLastName());
+            dto.setEmail(user.getEmail());
+            dto.setRole(user.getRole());
+            dto.setActive(user.isActive());
+            return dto;
+        }).toList());
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.kozikwlodarski.backendgymflex.controller;
 
-import com.kozikwlodarski.backendgymflex.entity.PaymentsEntity;
+import com.kozikwlodarski.backendgymflex.dto.response.PaymentResponseDto;
+import com.kozikwlodarski.backendgymflex.dto.request.PaymentStatusRequestDto;
+import jakarta.validation.Valid;
 import com.kozikwlodarski.backendgymflex.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +21,25 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @GetMapping("/mine")
+    public ResponseEntity<List<PaymentResponseDto>> getMyPayments(java.security.Principal principal) {
+        return ResponseEntity.ok(paymentService.getPaymentsForUser(principal.getName()));
+    }
+
     @GetMapping
-    public ResponseEntity<List<PaymentsEntity>> getAllPayments() {
+    public ResponseEntity<List<PaymentResponseDto>> getAllPayments() {
         return ResponseEntity.ok(paymentService.getAllPayments());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentsEntity> getPaymentById(@PathVariable Long id) {
+    public ResponseEntity<PaymentResponseDto> getPaymentById(@PathVariable Long id) {
         return ResponseEntity.ok(paymentService.getPaymentById(id));
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<PaymentResponseDto> changePaymentStatus(@PathVariable Long id,
+                                                                  @Valid @RequestBody PaymentStatusRequestDto request,
+                                                                  java.security.Principal principal) {
+        return ResponseEntity.ok(paymentService.changeStatus(id, request.getStatus(), principal.getName()));
     }
 }

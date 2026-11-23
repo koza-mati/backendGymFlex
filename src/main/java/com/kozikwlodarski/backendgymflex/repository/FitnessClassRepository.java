@@ -19,6 +19,19 @@ public interface FitnessClassRepository extends JpaRepository<FitnessClassEntity
     // 1. Grafik zajęć w podanym przedziale czasowym
     List<FitnessClassEntity> findAllByStartTimeBetweenAndIsActiveTrue(LocalDateTime start, LocalDateTime end);
 
+    List<FitnessClassEntity> findAllByIsActiveTrueAndStartTimeAfterOrderByStartTimeAsc(LocalDateTime startTime);
+    List<FitnessClassEntity> findAllByTrainerEmailAndIsActiveTrueOrderByStartTimeAsc(String email);
+
+    @Query(value = "SELECT class_id AS \"classId\", title, start_time AS \"startTime\", trainer, " +
+            "max_capacity AS \"maxCapacity\", booked, occupancy_pct AS \"occupancyPct\" " +
+            "FROM v_class_occupancy ORDER BY start_time ASC", nativeQuery = true)
+    List<ClassOccupancyProjection> findUpcomingOccupancyByStartTime();
+
+    @Query(value = "SELECT class_id AS \"classId\", title, start_time AS \"startTime\", trainer, " +
+            "max_capacity AS \"maxCapacity\", booked, occupancy_pct AS \"occupancyPct\" " +
+            "FROM v_class_occupancy ORDER BY occupancy_pct DESC, start_time ASC", nativeQuery = true)
+    List<ClassOccupancyProjection> findUpcomingOccupancyByPercentage();
+
     // 2. BLOKADA PESYMISTYCZNA dla Transakcji 1 (WNF.06) - zapobiega overbookingowi
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT f FROM FitnessClassEntity f WHERE f.id = :id AND f.isActive = true")

@@ -3,6 +3,9 @@ package com.kozikwlodarski.backendgymflex.repository;
 import com.kozikwlodarski.backendgymflex.entity.UsersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,6 +15,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<UsersEntity, Long>{
     // Do logowania przez email
     Optional<UsersEntity> findByEmail(String email);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM UsersEntity u WHERE u.email = :email")
+    Optional<UsersEntity> findByEmailForUpdate(@Param("email") String email);
 
     // Do sprawdzania unikalności przy rejestracji
     boolean existsByEmail(String email);

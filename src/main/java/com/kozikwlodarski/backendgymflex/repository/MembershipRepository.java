@@ -18,7 +18,9 @@ public interface MembershipRepository extends JpaRepository<MembershipEntity, Lo
 
     // Szukanie najpóźniejszej daty wygaśnięcia karnetu dla danego usera
     // Wykorzystywane w Transakcji 2 (MembershipService) do przeliczania dat
-    @Query("SELECT MAX(m.endDate) FROM MembershipEntity m WHERE m.users.id = :userId")
+    @Query("SELECT MAX(m.endDate) FROM MembershipEntity m " +
+            "WHERE m.users.id = :userId AND m.isActive = true " +
+            "AND EXISTS (SELECT p FROM PaymentsEntity p WHERE p.membershipEntity = m AND p.status = 'PAID')")
     Optional<LocalDate> findLatestEndDateForUser(@Param("userId") Long userId);
 
     // Sprawdzanie, czy klient ma aktywny karnet, który pokrywa podaną datę i ma status opłacony

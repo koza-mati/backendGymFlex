@@ -25,13 +25,13 @@ public class PaymentsEntity {
     @JoinColumn(name = "membership_id", nullable = false, unique = true)
     private MembershipEntity membershipEntity;
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    @Column(name = "amount", nullable = false, precision = 8, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "method", nullable = false, length = 30)
+    @Column(name = "method", nullable = false, length = 10)
     private String method;
 
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false, length = 10)
     private String status;
 
     @Column(name = "paid_at")
